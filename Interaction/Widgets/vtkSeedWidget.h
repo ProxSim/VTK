@@ -190,13 +190,29 @@ public:
     Start = 1,
     PlacingSeeds = 2,
     PlacedSeeds = 4,
-    MovingSeed = 8
+    MovingSeed = 8,
+    SelectSeed = 16
+  };
+
+  //@{
+  /**
+   * Get the button used to select the seed.
+   */
+  vtkGetMacro( SelectionButton, int );
+  //@}
+
+  // The button used to select the seed
+
+  enum
+  {
+    None = 0,
+    LeftButton = 1,
+    RightButton = 2
   };
 
 protected:
   vtkSeedWidget();
   ~vtkSeedWidget() override;
-
 
   int WidgetState;
 
@@ -213,6 +229,9 @@ protected:
 
   // Manipulating or defining ?
   int Defining;
+
+  // Button used to select the seed
+  int SelectionButton;
 
 private:
   vtkSeedWidget(const vtkSeedWidget&) = delete;
