@@ -41,6 +41,7 @@ vtkSeedWidget::vtkSeedWidget()
 {
   this->ManagesCursor = 1;
   this->WidgetState = vtkSeedWidget::Start;
+  this->SelectionButton = vtkSeedWidget::None;
 
   // The widgets for moving the seeds.
   this->Seeds = new vtkSeedList;
@@ -49,13 +50,31 @@ vtkSeedWidget::vtkSeedWidget()
   this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonPressEvent,
                                           vtkWidgetEvent::AddPoint,
                                           this, vtkSeedWidget::AddPointAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::MiddleButtonPressEvent,
+                                          vtkWidgetEvent::Select,
+                                          this, vtkSeedWidget::SelectAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::RightButtonPressEvent,
                                           vtkWidgetEvent::Completed,
                                           this, vtkSeedWidget::CompletedAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonDoubleClickEvent,
+                                          vtkWidgetEvent::PickLeftButton,
+                                          this, vtkSeedWidget::LeftButtonSelectAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::MiddleButtonDoubleClickEvent,
+                                          vtkWidgetEvent::PickMiddleButton,
+                                          this, vtkSeedWidget::MiddleButtonSelectAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::RightButtonDoubleClickEvent,
+                                          vtkWidgetEvent::PickRightButton,
+                                          this, vtkSeedWidget::RightButtonSelectAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::MouseMoveEvent,
                                           vtkWidgetEvent::Move,
                                           this, vtkSeedWidget::MoveAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonReleaseEvent,
+                                          vtkWidgetEvent::EndSelect,
+                                          this, vtkSeedWidget::EndSelectAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::MiddleButtonReleaseEvent,
+                                          vtkWidgetEvent::EndSelect,
+                                          this, vtkSeedWidget::EndSelectAction);
+  this->CallbackMapper->SetCallbackMethod(vtkCommand::RightButtonReleaseEvent,
                                           vtkWidgetEvent::EndSelect,
                                           this, vtkSeedWidget::EndSelectAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::KeyPressEvent,
@@ -173,6 +192,7 @@ void vtkSeedWidget::AddPointAction(vtkAbstractWidget *w)
     vtkSeedRepresentation *rep = static_cast<
       vtkSeedRepresentation * >(self->WidgetRep);
     int seedIdx = rep->GetActiveHandle();
+    self->SelectionButton = vtkSeedWidget::LeftButton;
     self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
 
     self->EventCallbackCommand->SetAbortFlag(1);
@@ -216,10 +236,42 @@ void vtkSeedWidget::CompletedAction(vtkAbstractWidget *w)
 {
   vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
 
-  // Do something only if we are in the middle of placing the seeds
+  // If we are in the middle of placing the seeds, end the placing and return
   if ( self->WidgetState == vtkSeedWidget::PlacingSeeds )
   {
     self->CompleteInteraction();
+    return;
+  }
+
+  // Manipulate handle
+  if ( self->WidgetState == vtkSeedWidget::SelectedSeed )
+  {
+    return;
+  }
+
+  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
+
+  // compute some info we need for all cases
+  int X = self->Interactor->GetEventPosition()[0];
+  int Y = self->Interactor->GetEventPosition()[1];
+
+  // When a seed is placed, a new handle widget must be created and enabled.
+  int state = self->WidgetRep->ComputeInteractionState(X,Y);
+  if ( state == vtkSeedRepresentation::NearSeed )
+  {
+    self->WidgetState = vtkSeedWidget::SelectedSeed;
+
+    // Invoke an event on ourself for the handles
+    self->InvokeEvent(vtkCommand::LeftButtonPressEvent,nullptr);
+    self->Superclass::StartInteraction();
+    vtkSeedRepresentation *rep = static_cast<
+      vtkSeedRepresentation * >(self->WidgetRep);
+    int seedIdx = rep->GetActiveHandle();
+    self->SelectionButton = vtkSeedWidget::RightButton;
+    self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
+
+    self->EventCallbackCommand->SetAbortFlag(1);
+    self->Render();
   }
 }
 
@@ -244,7 +296,8 @@ void vtkSeedWidget::MoveAction(vtkAbstractWidget *w)
   vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
 
   // Do nothing if outside
-  if ( self->WidgetState == vtkSeedWidget::Start )
+  if ( self->WidgetState == vtkSeedWidget::Start ||
+       self->WidgetState == vtkSeedWidget::SelectedSeed )
   {
     return;
   }
@@ -280,12 +333,164 @@ void vtkSeedWidget::MoveAction(vtkAbstractWidget *w)
 }
 
 //-------------------------------------------------------------------------
+void vtkSeedWidget::SelectAction(vtkAbstractWidget *w)
+{
+  vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
+
+  // Manipulate handle
+  if ( self->WidgetState == vtkSeedWidget::SelectedSeed )
+  {
+    return;
+  }
+
+  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
+
+  // compute some info we need for all cases
+  int X = self->Interactor->GetEventPosition()[0];
+  int Y = self->Interactor->GetEventPosition()[1];
+
+  // When a seed is placed, a new handle widget must be created and enabled.
+  int state = self->WidgetRep->ComputeInteractionState(X,Y);
+  if ( state == vtkSeedRepresentation::NearSeed )
+  {
+    self->WidgetState = vtkSeedWidget::SelectedSeed;
+
+    // Invoke an event on ourself for the handles
+    self->InvokeEvent(vtkCommand::LeftButtonPressEvent,nullptr);
+    self->Superclass::StartInteraction();
+    vtkSeedRepresentation *rep = static_cast<
+      vtkSeedRepresentation * >(self->WidgetRep);
+    int seedIdx = rep->GetActiveHandle();
+    self->SelectionButton = vtkSeedWidget::MiddleButton;
+    self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
+
+    self->EventCallbackCommand->SetAbortFlag(1);
+    self->Render();
+  }
+}
+
+//-------------------------------------------------------------------------
+void vtkSeedWidget::LeftButtonSelectAction(vtkAbstractWidget *w)
+{
+  vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
+
+  // Need to distinguish between placing handles and manipulating handles
+  if ( self->WidgetState == vtkSeedWidget::MovingSeed )
+  {
+    return;
+  }
+
+  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
+
+  // compute some info we need for all cases
+  int X = self->Interactor->GetEventPosition()[0];
+  int Y = self->Interactor->GetEventPosition()[1];
+
+  // When a seed is placed, a new handle widget must be created and enabled.
+  int state = self->WidgetRep->ComputeInteractionState(X,Y);
+  if ( state == vtkSeedRepresentation::NearSeed )
+  {
+    self->WidgetState = vtkSeedWidget::SelectedSeed;
+
+    // Invoke an event on ourself for the handles
+    self->InvokeEvent(vtkCommand::LeftButtonPressEvent,nullptr);
+    self->Superclass::StartInteraction();
+    vtkSeedRepresentation *rep = static_cast<
+      vtkSeedRepresentation * >(self->WidgetRep);
+    int seedIdx = rep->GetActiveHandle();
+    self->SelectionButton = vtkSeedWidget::LeftButtonDoubleClick;
+    self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
+
+    self->EventCallbackCommand->SetAbortFlag(1);
+    self->Render();
+  }
+
+}
+
+//-------------------------------------------------------------------------
+void vtkSeedWidget::MiddleButtonSelectAction(vtkAbstractWidget *w)
+{
+  vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
+
+  // Need to distinguish between placing handles and manipulating handles
+  if ( self->WidgetState == vtkSeedWidget::MovingSeed )
+  {
+    return;
+  }
+
+  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
+
+  // compute some info we need for all cases
+  int X = self->Interactor->GetEventPosition()[0];
+  int Y = self->Interactor->GetEventPosition()[1];
+
+  // When a seed is placed, a new handle widget must be created and enabled.
+  int state = self->WidgetRep->ComputeInteractionState(X,Y);
+  if ( state == vtkSeedRepresentation::NearSeed )
+  {
+    self->WidgetState = vtkSeedWidget::SelectedSeed;
+
+    // Invoke an event on ourself for the handles
+    self->InvokeEvent(vtkCommand::LeftButtonPressEvent,nullptr);
+    self->Superclass::StartInteraction();
+    vtkSeedRepresentation *rep = static_cast<
+      vtkSeedRepresentation * >(self->WidgetRep);
+    int seedIdx = rep->GetActiveHandle();
+    self->SelectionButton = vtkSeedWidget::MiddleButtonDoubleClick;
+    self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
+
+    self->EventCallbackCommand->SetAbortFlag(1);
+    self->Render();
+  }
+
+}
+
+//-------------------------------------------------------------------------
+void vtkSeedWidget::RightButtonSelectAction(vtkAbstractWidget *w)
+{
+  vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
+
+  // Need to distinguish between placing handles and manipulating handles
+  if ( self->WidgetState == vtkSeedWidget::MovingSeed )
+  {
+    return;
+  }
+
+  self->InvokeEvent(vtkCommand::MouseMoveEvent, nullptr);
+
+  // compute some info we need for all cases
+  int X = self->Interactor->GetEventPosition()[0];
+  int Y = self->Interactor->GetEventPosition()[1];
+
+  // When a seed is placed, a new handle widget must be created and enabled.
+  int state = self->WidgetRep->ComputeInteractionState(X,Y);
+  if ( state == vtkSeedRepresentation::NearSeed )
+  {
+    self->WidgetState = vtkSeedWidget::SelectedSeed;
+
+    // Invoke an event on ourself for the handles
+    self->InvokeEvent(vtkCommand::LeftButtonPressEvent,nullptr);
+    self->Superclass::StartInteraction();
+    vtkSeedRepresentation *rep = static_cast<
+      vtkSeedRepresentation * >(self->WidgetRep);
+    int seedIdx = rep->GetActiveHandle();
+    self->SelectionButton = vtkSeedWidget::RightButtonDoubleClick;
+    self->InvokeEvent(vtkCommand::StartInteractionEvent, &seedIdx);
+
+    self->EventCallbackCommand->SetAbortFlag(1);
+    self->Render();
+  }
+
+}
+
+//-------------------------------------------------------------------------
 void vtkSeedWidget::EndSelectAction(vtkAbstractWidget *w)
 {
   vtkSeedWidget *self = reinterpret_cast<vtkSeedWidget*>(w);
 
   // Do nothing if outside
-  if ( self->WidgetState != vtkSeedWidget::MovingSeed )
+  if ( !(self->WidgetState == vtkSeedWidget::MovingSeed ||
+         self->WidgetState == vtkSeedWidget::SelectedSeed) )
   {
     return;
   }
@@ -300,6 +505,7 @@ void vtkSeedWidget::EndSelectAction(vtkAbstractWidget *w)
   self->InvokeEvent(vtkCommand::EndInteractionEvent,nullptr);
   self->Superclass::EndInteraction();
   self->Render();
+  self->SelectionButton = vtkSeedWidget::None;
 }
 
 //-------------------------------------------------------------------------
