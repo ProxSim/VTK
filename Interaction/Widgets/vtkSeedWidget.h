@@ -192,13 +192,33 @@ public:
     Start = 1,
     PlacingSeeds = 2,
     PlacedSeeds = 4,
-    MovingSeed = 8
+    MovingSeed = 8,
+    SelectedSeed = 16
+  };
+
+  //@{
+  /**
+   * Get the button used to select the seed.
+   */
+  vtkGetMacro( SelectionButton, int );
+  //@}
+
+  // The button used to select the seed
+
+  enum
+  {
+    None = 0,
+    LeftButton = 1,
+    MiddleButton = 2,
+    RightButton = 4,
+    LeftButtonDoubleClick = 8,
+    MiddleButtonDoubleClick = 16,
+    RightButtonDoubleClick = 32
   };
 
 protected:
   vtkSeedWidget();
   ~vtkSeedWidget() override;
-
 
   int WidgetState;
 
@@ -207,6 +227,10 @@ protected:
   static void AddPointAction( vtkAbstractWidget* );
   static void CompletedAction( vtkAbstractWidget* );
   static void MoveAction( vtkAbstractWidget* );
+  static void SelectAction ( vtkAbstractWidget* );
+  static void LeftButtonSelectAction( vtkAbstractWidget* );
+  static void MiddleButtonSelectAction( vtkAbstractWidget* );
+  static void RightButtonSelectAction( vtkAbstractWidget* );
   static void EndSelectAction( vtkAbstractWidget* );
   static void DeleteAction( vtkAbstractWidget* );
 
@@ -215,6 +239,9 @@ protected:
 
   // Manipulating or defining ?
   int Defining;
+
+  // Button used to select the seed
+  int SelectionButton;
 
 private:
   vtkSeedWidget(const vtkSeedWidget&) = delete;
