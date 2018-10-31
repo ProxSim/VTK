@@ -32,9 +32,15 @@
  * watches the vtkRenderWindowInteractor for these events):
  * <pre>
  *   LeftButtonPressEvent - add a point or select a handle (i.e., seed)
- *   RightButtonPressEvent - finish adding the seeds
- *   MouseMoveEvent - move a handle (i.e., seed)
+ *   MiddleButtonPressEvent - select a handle (seed)
+ *   RightButtonPressEvent - finish adding the seeds or select a handle
+ *   LeftButtonDoubleClickEvent - select a handle (seed)
+ *   MiddleButtonDoubleClickEvent - select a handle (seed)
+ *   RightButtonDoubleClickEvent - select a handle (seed)
+ *   MouseMoveEvent - move a handle (seed)
  *   LeftButtonReleaseEvent - release the selected handle (seed)
+ *   MiddleButtonReleaseEvent - release the selected handle (seed)
+ *   RightButtonReleaseEvent - release the selected handle (seed)
  * </pre>
  *
  * @par Event Bindings:
@@ -45,7 +51,8 @@
  *   vtkWidgetEvent::AddPoint -- add one point; depending on the state
  *                               it may the first or second point added. Or,
  *                               if near handle, select handle.
- *   vtkWidgetEvent::Completed -- finished adding seeds.
+ *   vtkWidgetEvent::Completed -- finished adding seeds. Or, if near handle, select handle.
+ *   vtkWidgetEvent::Select -- if near handle, select handle.
  *   vtkWidgetEvent::Move -- move the second point or handle depending on the state.
  *   vtkWidgetEvent::EndSelect -- the handle manipulation process has completed.
  * </pre>
@@ -196,26 +203,6 @@ public:
     SelectedSeed = 16
   };
 
-  //@{
-  /**
-   * Get the button used to select the seed.
-   */
-  vtkGetMacro( SelectionButton, int );
-  //@}
-
-  // The button used to select the seed
-
-  enum
-  {
-    None = 0,
-    LeftButton = 1,
-    MiddleButton = 2,
-    RightButton = 4,
-    LeftButtonDoubleClick = 8,
-    MiddleButtonDoubleClick = 16,
-    RightButtonDoubleClick = 32
-  };
-
 protected:
   vtkSeedWidget();
   ~vtkSeedWidget() override;
@@ -227,10 +214,7 @@ protected:
   static void AddPointAction( vtkAbstractWidget* );
   static void CompletedAction( vtkAbstractWidget* );
   static void MoveAction( vtkAbstractWidget* );
-  static void SelectAction ( vtkAbstractWidget* );
-  static void LeftButtonSelectAction( vtkAbstractWidget* );
-  static void MiddleButtonSelectAction( vtkAbstractWidget* );
-  static void RightButtonSelectAction( vtkAbstractWidget* );
+  static void SelectAction( vtkAbstractWidget* );
   static void EndSelectAction( vtkAbstractWidget* );
   static void DeleteAction( vtkAbstractWidget* );
 
@@ -239,9 +223,6 @@ protected:
 
   // Manipulating or defining ?
   int Defining;
-
-  // Button used to select the seed
-  int SelectionButton;
 
 private:
   vtkSeedWidget(const vtkSeedWidget&) = delete;

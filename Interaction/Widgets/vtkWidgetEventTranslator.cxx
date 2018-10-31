@@ -13,6 +13,7 @@
 
 =========================================================================*/
 #include "vtkWidgetEventTranslator.h"
+#include "vtkAbstractWidget.h"
 #include "vtkCommand.h"
 #include "vtkEventData.h"
 #include "vtkObjectFactory.h"
@@ -40,6 +41,7 @@ struct EventItem {
     this->VTKEvent    = e;
     this->WidgetEvent = we;
     this->HasData = false;
+
   }
   EventItem(vtkEventData *edata, unsigned long we)
   {
