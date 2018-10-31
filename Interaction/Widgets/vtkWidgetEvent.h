@@ -48,6 +48,9 @@ public:
   enum WidgetEventIds {
     NoEvent = 0,
     Select,
+    SelectAlternativeOne,
+    SelectAlternativeTwo,
+    SelectAlternativeThree,
     EndSelect,
     PickLeftButton,
     PickMiddleButton,
