@@ -91,11 +91,13 @@ public:
   //                       vtkAbstractWidget *w, CallbackType f);
   //@}
 
+  //@{
   /**
    * This method invokes the callback given a widget event. A non-zero value
    * is returned if the listed event is registered.
    */
-  void InvokeCallback(unsigned long widgetEvent);
+  void InvokeCallback(unsigned long widgetEvent, int selectionButton);
+  //@}
 
 protected:
   vtkWidgetCallbackMapper();
@@ -114,7 +116,6 @@ protected:
    */
   void SetCallbackMethod(unsigned long widgetEvent,
                          vtkAbstractWidget *w, CallbackType f);
-
 
 private:
   vtkWidgetCallbackMapper(const vtkWidgetCallbackMapper&) = delete;

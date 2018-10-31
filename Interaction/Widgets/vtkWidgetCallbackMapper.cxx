@@ -26,11 +26,12 @@ vtkStandardNewMacro(vtkWidgetCallbackMapper);
 struct vtkCallbackPair
 {
   vtkCallbackPair():Widget(nullptr),Callback(nullptr) {} //map requires empty constructor
-  vtkCallbackPair(vtkAbstractWidget *w, vtkWidgetCallbackMapper::CallbackType f) :
-    Widget(w),Callback(f) {}
+  vtkCallbackPair(vtkAbstractWidget *w, vtkWidgetCallbackMapper::CallbackType f, int s = 0) :
+    Widget(w),Callback(f),SelectionButton(s) {}
 
   vtkAbstractWidget *Widget;
   vtkWidgetCallbackMapper::CallbackType Callback;
+  int SelectionButton;
 };
 
 
@@ -82,9 +83,9 @@ void vtkWidgetCallbackMapper::SetEventTranslator(vtkWidgetEventTranslator *t)
 
 //----------------------------------------------------------------------------
 void vtkWidgetCallbackMapper::SetCallbackMethod(unsigned long VTKEvent,
-                                                 unsigned long widgetEvent,
-                                                 vtkAbstractWidget *w,
-                                                 CallbackType f)
+                                                unsigned long widgetEvent,
+                                                vtkAbstractWidget *w,
+                                                CallbackType f)
 {
   this->EventTranslator->SetTranslation(VTKEvent,widgetEvent);
   this->SetCallbackMethod(widgetEvent,w,f);
@@ -93,10 +94,10 @@ void vtkWidgetCallbackMapper::SetCallbackMethod(unsigned long VTKEvent,
 
 //----------------------------------------------------------------------------
 void vtkWidgetCallbackMapper::SetCallbackMethod(unsigned long VTKEvent,
-                                                 int modifier, char keyCode,
-                                                 int repeatCount, const char* keySym,
-                                                 unsigned long widgetEvent,
-                                                 vtkAbstractWidget *w, CallbackType f)
+                                                int modifier, char keyCode,
+                                                int repeatCount, const char* keySym,
+                                                unsigned long widgetEvent,
+                                                vtkAbstractWidget *w, CallbackType f)
 {
   this->EventTranslator->SetTranslation(VTKEvent,modifier,keyCode,repeatCount,keySym,
                                         widgetEvent);
@@ -105,9 +106,9 @@ void vtkWidgetCallbackMapper::SetCallbackMethod(unsigned long VTKEvent,
 
 //----------------------------------------------------------------------------
 void vtkWidgetCallbackMapper::SetCallbackMethod(unsigned long VTKEvent,
-  vtkEventData *edata,
-  unsigned long widgetEvent,
-  vtkAbstractWidget *w, CallbackType f)
+                                                vtkEventData *edata,
+                                                unsigned long widgetEvent,
+                                                vtkAbstractWidget *w, CallbackType f)
 {
   this->EventTranslator->SetTranslation(VTKEvent, edata, widgetEvent);
   this->SetCallbackMethod(widgetEvent,w,f);
@@ -121,12 +122,13 @@ void vtkWidgetCallbackMapper::SetCallbackMethod(unsigned long widgetEvent,
 }
 
 //----------------------------------------------------------------------------
-void vtkWidgetCallbackMapper::InvokeCallback(unsigned long widgetEvent)
+void vtkWidgetCallbackMapper::InvokeCallback(unsigned long widgetEvent, int selectionButton)
 {
   vtkCallbackMap::CallbackMapIterator iter = this->CallbackMap->find(widgetEvent);
   if ( iter != this->CallbackMap->end() )
   {
     vtkAbstractWidget *w = (*iter).second.Widget;
+    w->SetSelectionButton(selectionButton);
     CallbackType f = (*iter).second.Callback;
     (*f)(w);
   }
