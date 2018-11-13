@@ -20,10 +20,10 @@
 static const char *vtkWidgetEventStrings[] = {
   "NoEvent",
   "Select",
-  "SelectAlternativeOne",
-  "SelectAlternativeTwo",
-  "SelectAlternativeThree",
   "EndSelect",
+  "PickOne",
+  "PickTwo",
+  "PickThree",
   "Delete",
   "Translate",
   "EndTranslate",

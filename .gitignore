@@ -12,3 +12,7 @@ __pycache__/
 # Exclude some Xcode stuff.
 xcuserdata
 project.xcworkspace
+
+# Exclude QtCreator files ...
+CMakeLists.txt.user*
+

@@ -162,6 +162,7 @@ public:
 
   enum
   {
+    Ignore = -1,
     None = 0,
     LeftButton = 1,
     MiddleButton = 2,

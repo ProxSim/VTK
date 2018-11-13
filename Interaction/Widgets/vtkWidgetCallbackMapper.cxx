@@ -26,12 +26,11 @@ vtkStandardNewMacro(vtkWidgetCallbackMapper);
 struct vtkCallbackPair
 {
   vtkCallbackPair():Widget(nullptr),Callback(nullptr) {} //map requires empty constructor
-  vtkCallbackPair(vtkAbstractWidget *w, vtkWidgetCallbackMapper::CallbackType f, int s = 0) :
-    Widget(w),Callback(f),SelectionButton(s) {}
+  vtkCallbackPair(vtkAbstractWidget *w, vtkWidgetCallbackMapper::CallbackType f) :
+    Widget(w),Callback(f) {}
 
   vtkAbstractWidget *Widget;
   vtkWidgetCallbackMapper::CallbackType Callback;
-  int SelectionButton;
 };
 
 
@@ -128,7 +127,10 @@ void vtkWidgetCallbackMapper::InvokeCallback(unsigned long widgetEvent, int sele
   if ( iter != this->CallbackMap->end() )
   {
     vtkAbstractWidget *w = (*iter).second.Widget;
-    w->SetSelectionButton(selectionButton);
+    if ( selectionButton != vtkAbstractWidget::Ignore )
+    {
+      w->SetSelectionButton(selectionButton);
+    }
     CallbackType f = (*iter).second.Callback;
     (*f)(w);
   }

@@ -58,13 +58,13 @@ vtkSeedWidget::vtkSeedWidget()
                                           this, vtkSeedWidget::CompletedAction);
 
   this->CallbackMapper->SetCallbackMethod(vtkCommand::LeftButtonDoubleClickEvent,
-                                          vtkWidgetEvent::SelectAlternativeOne,
+                                          vtkWidgetEvent::PickOne,
                                           this, vtkSeedWidget::SelectAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::MiddleButtonDoubleClickEvent,
-                                          vtkWidgetEvent::SelectAlternativeTwo,
+                                          vtkWidgetEvent::PickTwo,
                                           this, vtkSeedWidget::SelectAction);
   this->CallbackMapper->SetCallbackMethod(vtkCommand::RightButtonDoubleClickEvent,
-                                          vtkWidgetEvent::SelectAlternativeThree,
+                                          vtkWidgetEvent::PickThree,
                                           this, vtkSeedWidget::SelectAction);
 
   this->CallbackMapper->SetCallbackMethod(vtkCommand::MouseMoveEvent,

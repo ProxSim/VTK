@@ -337,32 +337,38 @@ void vtkAbstractWidget::SetPriority( float f )
 //----------------------------------------------------------------------
 int vtkAbstractWidget::MapVTKClickEventToSelectionButton(unsigned long VTKEvent)
 {
-  if (VTKEvent == vtkCommand::LeftButtonPressEvent ||
-      VTKEvent == vtkCommand::LeftButtonReleaseEvent)
+  if ( VTKEvent == vtkCommand::LeftButtonPressEvent ||
+       VTKEvent == vtkCommand::LeftButtonReleaseEvent )
   {
     return vtkAbstractWidget::LeftButton;
   }
-  else if (VTKEvent == vtkCommand::MiddleButtonPressEvent ||
-           VTKEvent == vtkCommand::MiddleButtonReleaseEvent)
+  else if ( VTKEvent == vtkCommand::MiddleButtonPressEvent ||
+            VTKEvent == vtkCommand::MiddleButtonReleaseEvent )
   {
     return vtkAbstractWidget::MiddleButton;
   }
-  else if (VTKEvent == vtkCommand::RightButtonPressEvent ||
-           VTKEvent == vtkCommand::RightButtonReleaseEvent)
+  else if ( VTKEvent == vtkCommand::RightButtonPressEvent ||
+            VTKEvent == vtkCommand::RightButtonReleaseEvent )
   {
     return vtkAbstractWidget::RightButton;
   }
-  else if (VTKEvent == vtkCommand::LeftButtonDoubleClickEvent)
+  else if ( VTKEvent == vtkCommand::LeftButtonDoubleClickEvent )
   {
     return vtkAbstractWidget::LeftButtonDoubleClick;
   }
-  else if (VTKEvent == vtkCommand::MiddleButtonDoubleClickEvent)
+  else if ( VTKEvent == vtkCommand::MiddleButtonDoubleClickEvent )
   {
     return vtkAbstractWidget::MiddleButtonDoubleClick;
   }
-  else if (VTKEvent == vtkCommand::RightButtonDoubleClickEvent)
+  else if ( VTKEvent == vtkCommand::RightButtonDoubleClickEvent )
   {
     return vtkAbstractWidget::RightButtonDoubleClick;
+  }
+  else if ( VTKEvent == vtkCommand::MouseMoveEvent ||
+            VTKEvent == vtkCommand::MouseWheelBackwardEvent ||
+            VTKEvent == vtkCommand::MouseWheelForwardEvent )
+  {
+    return vtkAbstractWidget::Ignore;
   }
 
   return vtkAbstractWidget::None;
