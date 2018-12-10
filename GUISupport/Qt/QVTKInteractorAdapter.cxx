@@ -455,14 +455,16 @@ bool QVTKInteractorAdapter::ProcessEvent(QEvent* e, vtkRenderWindowInteractor* i
     else if (QTapGesture *tap = static_cast<QTapGesture*>(e2->gesture(Qt::TapGesture)))
     {
       QPointF position = tap->position();
-      iren->SetEventPosition(position.x(), position.y());
+      // Must not set EventPosition here, as it would interfere with position set by click and move events.
+      // If needed, a separate TapEventPosition variable could be set instead.
       iren->InvokeEvent(vtkCommand::TapEvent, e2);
       return true;
     }
     else if (QTapAndHoldGesture *tapAndHold= static_cast<QTapAndHoldGesture*>(e2->gesture(Qt::TapAndHoldGesture)))
     {
       QPointF position = tapAndHold->position();
-      iren->SetEventPosition(position.x(), position.y());
+      // Must not set EventPosition here, as it would interfere with position set by click and move events.
+      // If needed, a separate TapEventPosition variable could be set instead.
       iren->InvokeEvent(vtkCommand::LongTapEvent, e2);
       return true;
     }
